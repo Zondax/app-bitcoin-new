@@ -108,71 +108,71 @@ static bool is_path_safe_for_pubkey_export(const uint32_t bip32_path[],
         uint32_t script_type = bip32_path[3] & 0x7FFFFFFF;
         if (script_type != 1 && script_type != 2) {
             return false;
+            }
         }
+
+        return true;
     }
 
-    return true;
-}
+    void handler_get_extended_pubkey(dispatcher_context_t *dc, uint8_t p2) {
+        (void) p2;
 
-void handler_get_extended_pubkey(dispatcher_context_t *dc, uint8_t p2) {
-    (void) p2;
+        LOG_PROCESSOR(__FILE__, __LINE__, __func__);
 
-    LOG_PROCESSOR(__FILE__, __LINE__, __func__);
+        // Device must be unlocked
+        if (os_global_pin_is_validated() != BOLOS_UX_OK) {
+            SEND_SW(dc, SW_SECURITY_STATUS_NOT_SATISFIED);
+            return;
+        }
 
-    // Device must be unlocked
-    if (os_global_pin_is_validated() != BOLOS_UX_OK) {
-        SEND_SW(dc, SW_SECURITY_STATUS_NOT_SATISFIED);
-        return;
+        uint8_t display;
+        uint8_t bip32_path_len;
+        if (!buffer_read_u8(&dc->read_buffer, &display) ||
+            !buffer_read_u8(&dc->read_buffer, &bip32_path_len)) {
+            SEND_SW(dc, SW_WRONG_DATA_LENGTH);
+            return;
+        }
+
+        if (display > 1 || bip32_path_len > MAX_BIP32_PATH_STEPS) {
+            SEND_SW(dc, SW_INCORRECT_DATA);
+            return;
+        }
+
+        uint32_t bip32_path[MAX_BIP32_PATH_STEPS];
+        if (!buffer_read_bip32_path(&dc->read_buffer, bip32_path, bip32_path_len)) {
+            SEND_SW(dc, SW_WRONG_DATA_LENGTH);
+            return;
+        }
+
+        uint32_t coin_types[3] = {BIP44_COIN_TYPE, BIP44_COIN_TYPE_2, BIP44_COIN_TYPE_3};
+        bool is_safe = is_path_safe_for_pubkey_export(bip32_path, bip32_path_len, coin_types, sizeof(coin_types)/ sizeof(uint32_t));
+
+        if (!is_safe && !display) {
+            SEND_SW(dc, SW_NOT_SUPPORTED);
+            return;
+        }
+
+        char serialized_pubkey_str[MAX_SERIALIZED_PUBKEY_LENGTH + 1];
+
+        int serialized_pubkey_len = get_serialized_extended_pubkey_at_path(bip32_path,
+                                                                        bip32_path_len,
+                                                                        BIP32_PUBKEY_VERSION,
+                                                                        serialized_pubkey_str,
+                                                                        NULL);
+        if (serialized_pubkey_len == -1) {
+            SEND_SW(dc, SW_BAD_STATE);
+            return;
+        }
+
+        char path_str[MAX_SERIALIZED_BIP32_PATH_LENGTH + 1] = "(Master key)";
+        if (bip32_path_len > 0) {
+            bip32_path_format(bip32_path, bip32_path_len, path_str, sizeof(path_str));
+        }
+
+        if (display && !ui_display_pubkey(dc, path_str, !is_safe, serialized_pubkey_str)) {
+            SEND_SW(dc, SW_DENY);
+            return;
+        }
+
+        SEND_RESPONSE(dc, serialized_pubkey_str, strlen(serialized_pubkey_str), SW_OK);
     }
-
-    uint8_t display;
-    uint8_t bip32_path_len;
-    if (!buffer_read_u8(&dc->read_buffer, &display) ||
-        !buffer_read_u8(&dc->read_buffer, &bip32_path_len)) {
-        SEND_SW(dc, SW_WRONG_DATA_LENGTH);
-        return;
-    }
-
-    if (display > 1 || bip32_path_len > MAX_BIP32_PATH_STEPS) {
-        SEND_SW(dc, SW_INCORRECT_DATA);
-        return;
-    }
-
-    uint32_t bip32_path[MAX_BIP32_PATH_STEPS];
-    if (!buffer_read_bip32_path(&dc->read_buffer, bip32_path, bip32_path_len)) {
-        SEND_SW(dc, SW_WRONG_DATA_LENGTH);
-        return;
-    }
-
-    uint32_t coin_types[2] = {BIP44_COIN_TYPE, BIP44_COIN_TYPE_2};
-    bool is_safe = is_path_safe_for_pubkey_export(bip32_path, bip32_path_len, coin_types, 2);
-
-    if (!is_safe && !display) {
-        SEND_SW(dc, SW_NOT_SUPPORTED);
-        return;
-    }
-
-    char serialized_pubkey_str[MAX_SERIALIZED_PUBKEY_LENGTH + 1];
-
-    int serialized_pubkey_len = get_serialized_extended_pubkey_at_path(bip32_path,
-                                                                       bip32_path_len,
-                                                                       BIP32_PUBKEY_VERSION,
-                                                                       serialized_pubkey_str,
-                                                                       NULL);
-    if (serialized_pubkey_len == -1) {
-        SEND_SW(dc, SW_BAD_STATE);
-        return;
-    }
-
-    char path_str[MAX_SERIALIZED_BIP32_PATH_LENGTH + 1] = "(Master key)";
-    if (bip32_path_len > 0) {
-        bip32_path_format(bip32_path, bip32_path_len, path_str, sizeof(path_str));
-    }
-
-    if (display && !ui_display_pubkey(dc, path_str, !is_safe, serialized_pubkey_str)) {
-        SEND_SW(dc, SW_DENY);
-        return;
-    }
-
-    SEND_RESPONSE(dc, serialized_pubkey_str, strlen(serialized_pubkey_str), SW_OK);
-}

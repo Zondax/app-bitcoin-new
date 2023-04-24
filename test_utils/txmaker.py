@@ -12,7 +12,7 @@ from embit.bip32 import HDKey
 from embit.bip39 import mnemonic_to_seed
 
 
-SPECULOS_SEED = "glory promote mansion idle axis finger extra february uncover one trip resource lawn turtle enact monster seven myth punch hobby comfort wild raise skin"
+SPECULOS_SEED = "equip will roof matter pink blind book anxiety banner elbow sun young"
 master_key = HDKey.from_seed(mnemonic_to_seed(SPECULOS_SEED))
 master_key_fpr = master_key.derive("m/0'").fingerprint
 
