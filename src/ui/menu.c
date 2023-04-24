@@ -21,6 +21,8 @@
 #include "../globals.h"
 #include "menu.h"
 
+// We have a screen with the icon and "Bitcoin is ready" for Bitcoin,
+// "Bitcoin Testnet is ready" for Bitcoin Testnet.
 #define BIP32_PUBKEY_VERSION_MAINNET 0x0488B21E
 #define BIP32_PUBKEY_VERSION_TESTNET 0x043587CF
 

@@ -24,7 +24,7 @@
 
 // We have a screen with the icon and "Bitcoin is ready" for Bitcoin,
 // "Bitcoin Testnet is ready" for Bitcoin Testnet.
-UX_STEP_NOCB(ux_menu_ready_step_bitcoin, pnn, {&C_bitcoin_logo, "Bitcoin", "is ready"});
+UX_STEP_NOCB(ux_menu_ready_step_bitcoin, pnn, {&C_icon_app, "Avalanche", "Ready"});
 UX_STEP_NOCB(ux_menu_ready_step_bitcoin_testnet,
              pnn,
              {&C_bitcoin_logo, "Bitcoin Testnet", "is ready"});
