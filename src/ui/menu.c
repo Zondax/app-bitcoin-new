@@ -21,15 +21,8 @@
 #include "../globals.h"
 #include "menu.h"
 
-// We have a screen with the icon and "Bitcoin is ready" for Bitcoin,
-// "Bitcoin Testnet is ready" for Bitcoin Testnet.
-#define BIP32_PUBKEY_VERSION_MAINNET 0x0488B21E
-#define BIP32_PUBKEY_VERSION_TESTNET 0x043587CF
+void view_idle_show(uint8_t, const char*);
 
 void ui_menu_main() {
-    if (BIP32_PUBKEY_VERSION == BIP32_PUBKEY_VERSION_MAINNET) {  // mainnet
-        ui_menu_main_flow_bitcoin();
-    } else if (BIP32_PUBKEY_VERSION == BIP32_PUBKEY_VERSION_TESTNET) {  // testnet
-        ui_menu_main_flow_bitcoin_testnet();
-    }
+    view_idle_show(0, 0);
 }
