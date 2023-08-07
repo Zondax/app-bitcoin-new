@@ -205,7 +205,7 @@ void handler_get_wallet_address(dispatcher_context_t *dc, uint8_t protocol_versi
             return;
         }
 
-        uint32_t coin_types[2] = {BIP44_COIN_TYPE, BIP44_COIN_TYPE_2};
+        uint32_t coin_types[3] = {BIP44_COIN_TYPE, BIP44_COIN_TYPE_2, BIP44_COIN_TYPE_3};
 
         uint32_t bip32_path[5];
         for (int i = 0; i < 3; i++) {
@@ -214,7 +214,12 @@ void handler_get_wallet_address(dispatcher_context_t *dc, uint8_t protocol_versi
         bip32_path[3] = is_change ? 1 : 0;
         bip32_path[4] = address_index;
 
-        if (!is_address_path_standard(bip32_path, 5, bip44_purpose, coin_types, 2, -1)) {
+        if (!is_address_path_standard(bip32_path,
+                                      5,
+                                      bip44_purpose,
+                                      coin_types,
+                                      sizeof(coin_types) / sizeof(uint32_t),
+                                      -1)) {
             SEND_SW(dc, SW_INCORRECT_DATA);
             return;
         }
