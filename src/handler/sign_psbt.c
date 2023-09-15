@@ -679,8 +679,9 @@ init_global_state(dispatcher_context_t *dc, sign_psbt_state_t *st) {
                 }
             }
 
-            uint32_t coin_types[3] = {BIP44_COIN_TYPE, BIP44_COIN_TYPE_2, BIP44_COIN_TYPE_3};
-            uint32_t coin_types_len = sizeof(coin_types)/ sizeof(uint32_t);
+            // Allow only 44'/60'/x
+            uint32_t coin_types[1] = {BIP44_COIN_TYPE_3};
+            uint32_t coin_types_len = sizeof(coin_types) / sizeof(uint32_t);
             if (key_info.master_key_derivation_len != 3 ||
                 !is_pubkey_path_standard(key_info.master_key_derivation,
                                          key_info.master_key_derivation_len,

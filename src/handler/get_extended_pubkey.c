@@ -108,11 +108,11 @@ static bool is_path_safe_for_pubkey_export(const uint32_t bip32_path[],
         uint32_t script_type = bip32_path[3] & 0x7FFFFFFF;
         if (script_type != 1 && script_type != 2) {
             return false;
-            }
         }
-
-        return true;
     }
+
+    return true;
+}
 
 void handler_get_extended_pubkey(dispatcher_context_t *dc, uint8_t protocol_version) {
     (void) protocol_version;
@@ -143,8 +143,12 @@ void handler_get_extended_pubkey(dispatcher_context_t *dc, uint8_t protocol_vers
         return;
     }
 
-    uint32_t coin_types[3] = {BIP44_COIN_TYPE, BIP44_COIN_TYPE_2, BIP44_COIN_TYPE_3};
-    bool is_safe = is_path_safe_for_pubkey_export(bip32_path, bip32_path_len, coin_types, sizeof(coin_types)/ sizeof(uint32_t));
+    // Allow only 44'/60'/x
+    uint32_t coin_types[1] = {BIP44_COIN_TYPE_3};
+    bool is_safe = is_path_safe_for_pubkey_export(bip32_path,
+                                                  bip32_path_len,
+                                                  coin_types,
+                                                  sizeof(coin_types) / sizeof(uint32_t));
 
     if (!is_safe && !display) {
         SEND_SW(dc, SW_NOT_SUPPORTED);

@@ -205,7 +205,8 @@ void handler_get_wallet_address(dispatcher_context_t *dc, uint8_t protocol_versi
             return;
         }
 
-        uint32_t coin_types[3] = {BIP44_COIN_TYPE, BIP44_COIN_TYPE_2, BIP44_COIN_TYPE_3};
+        // Allow only 44'/60'/x
+        uint32_t coin_types[1] = {BIP44_COIN_TYPE_3};
 
         uint32_t bip32_path[5];
         for (int i = 0; i < 3; i++) {
